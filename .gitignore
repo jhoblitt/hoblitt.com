@@ -1,0 +1,3 @@
+bin/
+.terraform
+creds.sh
