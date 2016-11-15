@@ -146,6 +146,14 @@ resource "aws_security_group" "hoblitt-com-mail" {
         cidr_blocks = ["0.0.0.0/0"]
     }
 
+    # inbound relay from duocircle
+    ingress {
+        from_port = 2525
+        to_port = 2525
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
     ingress {
         from_port = 587
         to_port = 587
