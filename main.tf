@@ -181,6 +181,69 @@ resource "aws_security_group" "hoblitt-com-mail" {
     }
 }
 
+resource "aws_security_group" "hoblitt-com-icmp" {
+    vpc_id = "${aws_vpc.hoblitt-com.id}"
+    name = "hoblitt-com-icmp"
+    description = "allow icmp"
+
+    ingress {
+        from_port = 0
+        to_port = 0
+        protocol = "icmp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port = 8
+        to_port = 8
+        protocol = "icmp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "icmp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port = 8
+        to_port = 8
+        protocol = "icmp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags {
+        Name = "hoblitt-com-icmp"
+    }
+}
+
+resource "aws_security_group" "hoblitt-com-internal" {
+  vpc_id      = "${aws_vpc.hoblitt-com.id}"
+  name        = "hoblitt-com-internal"
+  description = "allow all VPC internal traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["${aws_subnet.hoblitt-com.cidr_block}"]
+  }
+
+  # allow all output traffic from the VPC
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags {
+    Name = "hoblitt-com-internal"
+  }
+}
+
 resource "aws_instance" "web" {
     ami = "ami-d2c924b2"
     instance_type = "t2.small"
@@ -188,6 +251,8 @@ resource "aws_instance" "web" {
     instance_initiated_shutdown_behavior = "stop"
     subnet_id = "${aws_subnet.hoblitt-com.id}"
     vpc_security_group_ids = [
+        "${aws_security_group.hoblitt-com-internal.id}",
+        "${aws_security_group.hoblitt-com-icmp.id}",
         "${aws_security_group.hoblitt-com-ssh.id}",
         "${aws_security_group.hoblitt-com-http.id}",
         "${aws_security_group.hoblitt-com-mail.id}",
